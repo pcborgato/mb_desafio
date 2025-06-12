@@ -1,77 +1,45 @@
-# Desafio MB - Corretoras de Criptomoedas
+# Desafio MB - App de Cotação de Exchanges
 
-Este é um aplicativo Android de exemplo que exibe uma lista de corretoras de criptomoedas (Exchanges) obtidas através de uma API. O projeto demonstra o uso de tecnologias modernas de desenvolvimento Android, incluindo Jetpack Compose, ViewModel, Coroutines, Retrofit, Hilt e uma arquitetura baseada em Use Cases (Casos de Uso).
+Este projeto é uma aplicação Android desenvolvida como parte de um desafio técnico. O objetivo principal do aplicativo é consumir a API da [CoinAPI.io](https://www.coinapi.io/) para buscar e exibir uma lista de exchanges de criptomoedas, permitindo ao usuário visualizar detalhes de cada uma.
 
 ## Funcionalidades
 
-*   Exibe uma lista de corretoras de criptomoedas.
-*   Mostra detalhes de cada corretora, como nome, ID e volume de negociação nas últimas 24 horas (USD).
-*   Permite visualizar detalhes de uma corretora selecionada (funcionalidade de navegação pendente ou a ser especificada).
-*   Tratamento de estados de carregamento (loading), sucesso e erro.
-*   Botão para tentar novamente em caso de falha na busca de dados.
+*   **Listagem de Exchanges:** Exibe uma lista de exchanges de criptomoedas obtidas da API, mostrando informações como nome, ID e volume de negociação (se disponível na listagem).
+*   **Detalhes da Exchange:** Ao selecionar uma exchange da lista, o usuário é direcionado para uma tela de detalhes que mostra informações mais completas sobre a exchange (como site, data de início, etc. - *dependendo dos dados que você optou por mostrar*).
+*   **Tratamento de Estados:** A interface do usuário reflete os estados de carregamento, sucesso e erro durante as chamadas de API.
+*   **Interface Reativa:** Construído utilizando Jetpack Compose para uma UI moderna e declarativa.
+*   **Navegação:** Utiliza o Navigation Compose para gerenciar a navegação entre as telas.
 
 ## Arquitetura e Tecnologias Utilizadas
 
-O projeto segue uma arquitetura inspirada em Clean Architecture, separando as responsabilidades em diferentes camadas:
+O projeto adota uma arquitetura inspirada no MVVM (Model-View-ViewModel) com elementos que visam uma boa separação de responsabilidades.
 
-*   **UI (Interface do Usuário):** Construída com Jetpack Compose.
-    *   `ExchangeListScreen`: Composable principal que exibe a lista de corretoras e interage com o ViewModel.
-    *   `ExchangeListViewModel`: Gerencia o estado da UI e delega a lógica de negócios aos Use Cases.
-*   **Domain (Domínio):** Contém a lógica de negócios central e as definições dos Use Cases.
-    *   `GetExchangesUseCase`: Caso de Uso responsável por obter a lista de corretoras. Encapsula a lógica de interação com o repositório.
-*   **Data (Dados):** Responsável por fornecer os dados para o aplicativo, seja de uma API remota ou de um cache local (não implementado neste exemplo).
-    *   `ExchangeRepository`: Interface que define o contrato para obtenção dos dados das corretoras.
-    *   `ExchangeRepositoryImpl`: Implementação concreta do repositório, utilizando Retrofit para chamadas de API.
-    *   `CoinApiService`: Interface Retrofit para definir os endpoints da API.
-    *   `Exchange`: Modelo de dados (POKO/data class) representando uma corretora.
+*   **Linguagem:** Kotlin
+*   **UI Toolkit:** Jetpack Compose
+*   **Gerenciamento de Estado da UI:** ViewModel com `LiveData` e `ExchangeUiState` para representar os diferentes estados da tela.
+*   **Navegação:** Navigation Compose
+*   **Networking:**
+    *   Retrofit: Para realizar chamadas HTTP à API da CoinAPI.
+    *   Gson: Para serialização/desserialização de JSON.
+    *   OkHttp Logging Interceptor: Para visualização dos logs de chamadas de rede durante o desenvolvimento.
+*   **Coroutines:** Para gerenciamento de operações assíncronas (chamadas de API).
+*   **Testes:**
+    *   JUnit 4: Para testes unitários.
+    *   Mockito (ou MockK): Para mocking de dependências em testes.
+    *   Testes de UI com Compose (`createComposeRule`).
+    *   `kotlinx-coroutines-test`: Para testar coroutines.
 
-**Principais Tecnologias e Bibliotecas:**
+### Estrutura de Camadas (Simplificada)
 
-*   **Kotlin:** Linguagem de programação principal.
-*   **Jetpack Compose:** Toolkit moderno para construção de UIs nativas do Android.
-*   **ViewModel (Jetpack):** Para gerenciar dados relacionados à UI de forma consciente ao ciclo de vida.
-*   **LiveData (Jetpack):** Para observar mudanças de dados (embora o projeto possa evoluir para usar StateFlow).
-*   **Coroutines:** Para gerenciamento de concorrência e operações assíncronas.
-*   **Retrofit:** Para realizar chamadas de rede HTTP de forma type-safe.
-*   **Hilt (Dagger):** Para injeção de dependência, facilitando o gerenciamento de dependências e a testabilidade.
-*   **Mockito-Kotlin:** Para mocking em testes unitários e de UI.
-*   **JUnit 4 & AndroidX Test:** Para testes unitários e de instrumentação.
+1.  **UI (Apresentação):**
+    *   Composable Screens (`ExchangeListScreen.kt`, `ExchangeDetailScreen.kt`)
+    *   ViewModel (`ExchangeListViewModel.kt`) - Prepara e gerencia os dados para a UI.
+2.  **Data:**
+    *   Repository (`ExchangeRepository.kt`, `ExchangeRepositoryImpl.kt`) - Abstrai a fonte de dados e gerencia a lógica de obtenção e cache (se houver).
+    *   Network (`CoinApiService.kt`, `RetrofitInstance.kt`) - Responsável pela comunicação com a API.
+    *   Models (`Exchange.kt`) - Representação dos dados da API.
 
-## Injeção de Dependência com Hilt
-
-Este projeto utiliza Hilt para gerenciar a injeção de dependência.
-
-*   `MbApplication.kt`: Classe Application anotada com `@HiltAndroidApp` para habilitar a geração de código do Hilt.
-*   **Módulos Hilt:**
-    *   `AppModule.kt` (ou similar): Pode conter bindings para dependências de nível de aplicativo, como instâncias do Retrofit, OkHttpClient, etc.
-    *   `RepositoryModule.kt`: Fornece a implementação concreta do `ExchangeRepository`.
-    *   `UseCaseModule.kt`: Fornece a implementação concreta do `GetExchangesUseCase` (e outros Use Cases, se houver).
-*   **Injeção em Componentes Android:**
-    *   ViewModels (como `ExchangeListViewModel`) são anotados com `@HiltViewModel` e suas dependências (como `GetExchangesUseCase`) são injetadas no construtor com `@Inject`.
-
-## Use Cases (Casos de Uso)
-
-A camada de domínio introduz Use Cases para encapsular a lógica de negócios específica.
-
-*   `GetExchangesUseCase`:
-    *   Interface: `domain.usecase.GetExchangesUseCase`
-    *   Implementação: `domain.usecase.GetExchangesUseCaseImpl`
-    *   Responsabilidade: Orquestrar a busca da lista de corretoras, interagindo com o `ExchangeRepository`.
-    *   Benefícios: Separação de responsabilidades, melhor testabilidade e clareza da lógica de negócios.
-
-## Testes
-
-O projeto inclui:
-
-*   **Testes Unitários:** Para ViewModels e Use Cases, localizados em `src/test`.
-    *   `ExchangeListViewModelTest.kt`: Testa a lógica do ViewModel, zombando do `GetExchangesUseCase`.
-*   **Testes de UI (Instrumentação):** Para a tela `ExchangeListScreen`, localizados em `src/androidTest`.
-    *   `ExchangeListScreenTest.kt`: Testa as interações da UI e a exibição de diferentes estados, usando Hilt para fornecer um `GetExchangesUseCase` mockado através de `@BindValue`.
-
-Para executar os testes:
-
-*   No Android Studio, clique com o botão direito na pasta `test` ou `androidTest` (ou em um arquivo de teste específico) e selecione "Run tests".
-*   Ou use os comandos Gradle:
+## Configuração do Projeto
 
 ### Pré-requisitos
 
@@ -96,35 +64,3 @@ Como não houve permissão para acessar o serviço, optei por escrever um mock
 "QuotaValueUnit": "$",
 "QuotaValueAdjustable": "Yes, acquire or upgrade subscription, add service credits manually or setup auto-recharge."
 }
-
-## Estrutura de Pacotes (Sugestão)
-```
-com.example.desafio_mb
-├── data
-│   ├── model
-│   │   └── Exchange
-│   ├── network
-│   │   ├── CoinApiService
-│   │   └── RetrofitInstance
-│   └── repository
-│       ├── ExchangeRepository
-│       ├── ExchangeRepositoryImpl
-│       └── FakeExchangeRepositoryImpl
-├── domain
-│   ├── model 
-│   └── usecase
-│       ├── SelectExchangeUseCase.kt (interface)
-│       └── GetExchangesUseCaseImpl.kt (implementação)
-├── ui
-│   ├── view
-│   │   ├── MainActivity
-│   │   ├── ExchangeDetailScreen
-│   |   └── ExchangeListScreen
-│   └── viewmodel
-│       └── ExchangeListViewModel
-├── navigation
-│   └── AppNavigation
-└── di
-    ├── AppModule
-    ├── Qualifiers
-    └── UseCaseModule
