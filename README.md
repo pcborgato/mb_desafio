@@ -5,7 +5,7 @@ Este projeto é uma aplicação Android desenvolvida como parte de um desafio t�
 ## Funcionalidades
 
 *   **Listagem de Exchanges:** Exibe uma lista de exchanges de criptomoedas obtidas da API, mostrando informações como nome, ID e volume de negociação (se disponível na listagem).
-*   **Detalhes da Exchange:** Ao selecionar uma exchange da lista, o usuário é direcionado para uma tela de detalhes que mostra informações mais completas sobre a exchange (como site, data de início, etc. - *dependendo dos dados que você optou por mostrar*).
+*   **Detalhes da Exchange:** Ao selecionar uma exchange da lista, o usuário é direcionado para uma tela de detalhes que mostra informações mais completas sobre a exchange (como site, data de início, etc. ).
 *   **Tratamento de Estados:** A interface do usuário reflete os estados de carregamento, sucesso e erro durante as chamadas de API.
 *   **Interface Reativa:** Construído utilizando Jetpack Compose para uma UI moderna e declarativa.
 *   **Navegação:** Utiliza o Navigation Compose para gerenciar a navegação entre as telas.
@@ -63,4 +63,19 @@ Como não houve permissão para acessar o serviço, optei por escrever um mock
 "QuotaValue": 0,
 "QuotaValueUnit": "$",
 "QuotaValueAdjustable": "Yes, acquire or upgrade subscription, add service credits manually or setup auto-recharge."
+}
+
+## Usando o mockado
+
+Use `@RealRepository` para acessar o serviço via Retrofit ou use `@MockRepository` para usar dados mockados
+
+```kotlin
+class GetExchangesUseCaseImpl @Inject constructor(
+   // @RealRepository private val repository: ExchangeRepository
+    @MockRepository private val repository: ExchangeRepository
+) : SelectExchangeUseCase {
+
+    override suspend fun invoke(): Result<List<Exchange>> {
+        return repository.getExchanges()
+    }
 }
